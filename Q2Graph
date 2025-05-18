@@ -1,0 +1,87 @@
+from Question2_User_Profile import UserProfile
+
+class Graph:
+    #Initialize the graph with initial node of None
+    def __init__(self, edges=None):
+        self.graph_dict = {}
+        if edges is not None:
+            #if a tuple/ connection is parsed into Graph contructor call add_connection
+            self.add_connection(edges)
+
+    #Adds one or more directed edges to the graph
+    def add_connection(self, edges):
+        # If start node exists, append end node (if not already present)
+        for start, end in edges:
+            if start in self.graph_dict:
+                if end not in self.graph_dict[start]:  # Prevent duplicates
+                    self.graph_dict[start].append(end)
+
+                # Make sure every inserted user is valid
+                if start not in self.graph_dict:
+                    self.graph_dict[start]=[]
+
+                if end not in self.graph_dict:
+                    self.graph_dict[end] = []
+            # Create new entry for start node if it doesn't exist
+            else:
+                self.graph_dict[start] = [end]
+
+
+    def get_followers(self,node):
+        followers = []
+        for start_node, neighbors in self.graph_dict.items():  # Fixed iteration
+            if node in neighbors:  # Check if target is in neighbor list
+                followers.append(start_node)
+        return followers
+
+
+    def is_related(self, start, end, visited=None):
+        # Initialize visited set if not provided (for first call)
+        if visited is None:
+            visited = set()
+
+        # Check if start exists in graph
+        if start not in self.graph_dict:
+            return False
+
+        # Check direct connections
+        if end in self.graph_dict[start]:
+            return True
+
+        # Mark current node as visited
+        visited.add(start)
+
+        # Recursively check all unvisited neighbors
+        for neighbor in self.graph_dict[start]:
+            if neighbor not in visited:
+                if self.is_related(neighbor, end, visited):
+                    return True
+
+        return False
+
+    # Return all users
+    def get_users(self,graph_dict):
+        return list(self.graph_dict.keys())
+
+
+if __name__=="__main__":
+    connections = [
+        ("Alice", "Bob"),
+        ("Alice", "Charlie"),
+        ("Bob", "Diana"),
+        ("Diana", "Alice"),
+        ("Eve", "Alice"),
+        ("Eve", "Charlie"),
+        ("Charlie", "Eve")
+    ]
+
+    social=Graph(connections)
+    social.add_connection([("Alice", "BRUH")])
+    print(social.graph_dict)
+    print(social.get_followers("BRUH"))
+    print(social.is_related("Alice", "Eve",visited=set()))
+
+    # for user in social.graph_dict.keys():
+    #     set_profile(user, social.graph_dict[user], len(social.get_followers(user)),"I Like Tutrles")
+
+
