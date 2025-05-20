@@ -1,4 +1,5 @@
 import random
+from Question2_UI import terminal_ui
 class Person:
     def __init__(self,username="default", bio="Default",privacy="Open",gender="None"):
         self.username=username
@@ -39,6 +40,7 @@ class Graph:
             if self.is_related(start, end):
                 if start in self.graph_dict and end in self.graph_dict[start]:
                     self.graph_dict[start].remove(end)
+
     def get_followers(self,node):
         followers = []
         for start_node, neighbors in self.graph_dict.items():  # Fixed iteration
@@ -84,6 +86,19 @@ class Graph:
         else:
             return self.bio
 
+    def generate_Profile(self):
+        # Collect all unique usernames from the graph (keys and values)
+        for user, follows in social.graph_dict.items():
+            user_list.add(user)
+            for follow in follows:
+                user_list.add(follow)
+
+        for username in user_list:
+            bio = random.choice(random_bio)
+            privacy = random.choice(["private", "open"])  # Needs to be a list, not two strings
+            gender = random.choice(["Male", "Female"])
+            person_profiles[username] = Person(username, bio, privacy, gender)
+
 if __name__=="__main__":
     random_bio=["Ball","Cook","Study","Strong","Sad"]
     user_list=set()
@@ -99,31 +114,23 @@ if __name__=="__main__":
     ]
 
 
-    social=Graph()
-    social.add_connection([("Alice", "BRUH")])
 
-    # Collect all unique usernames from the graph (keys and values)
-    for user, follows in social.graph_dict.items():
-        user_list.add(user)
-        for follow in follows:
-            user_list.add(follow)
+    # social.add_connection([("Alice", "BRUH")])
 
 
-    for username in user_list:
-        bio = random.choice(random_bio)
-        privacy = random.choice(["private", "open"])  # Needs to be a list, not two strings
-        gender = random.choice(["Male","Female"])
-        person_profiles[username] = Person(username, bio, privacy, gender)
 
-
+    social = Graph()
     social.add_connection(connections)
-    print(social.bio)
-    print(social.graph_dict)
-    print(social.get_followers("BRUH"))
-    print(social.get_following("BRUH"))
-    print(social.is_related("Alice", "Eve",visited=set()))
-    print(person_profiles["Alice"])
-    social.unfollow([("Alice","BRUH")])
-    print(social.graph_dict)
+    social.generate_Profile()
+    # print(social.bio)
+    # print(social.graph_dict)
+    # print(social.get_followers("BRUH"))
+    # print(social.get_following("BRUH"))
+    # print(social.is_related("Alice", "Eve",visited=set()))
+    # print(person_profiles["Alice"])
+    # social.unfollow([("Alice","BRUH")])
+    # print(social.graph_dict)
     # for user in social.graph_dict.keys():
     #     set_profile(user, social.graph_dict[user], len(social.get_followers(user)),"I Like Tutrles")
+
+    terminal_ui(social, person_profiles)
