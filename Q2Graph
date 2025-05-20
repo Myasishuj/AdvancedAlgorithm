@@ -34,6 +34,11 @@ class Graph:
             if end not in self.graph_dict[start]:
                 self.graph_dict[start].append(end)
 
+    def unfollow(self, edges):
+        for start, end in edges:
+            if self.is_related(start, end):
+                if start in self.graph_dict and end in self.graph_dict[start]:
+                    self.graph_dict[start].remove(end)
     def get_followers(self,node):
         followers = []
         for start_node, neighbors in self.graph_dict.items():  # Fixed iteration
@@ -116,6 +121,7 @@ if __name__=="__main__":
     print(social.get_following("BRUH"))
     print(social.is_related("Alice", "Eve",visited=set()))
     print(person_profiles["Alice"])
-
+    social.unfollow([("Alice","BRUH")])
+    print(social.graph_dict)
     # for user in social.graph_dict.keys():
     #     set_profile(user, social.graph_dict[user], len(social.get_followers(user)),"I Like Tutrles")
