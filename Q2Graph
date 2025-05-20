@@ -1,13 +1,13 @@
 import random
 class Person:
-    def __init__(self,username="default", bio="Default",privacy="Open"):
+    def __init__(self,username="default", bio="Default",privacy="Open",gender="None"):
         self.username=username
         self.bio=bio
         self.privacy=privacy
-
+        self.gender=gender
     def __str__(self):
         if self.privacy.lower() == "private":
-            return f"Name: {self.username}\nBio: [Hidden]"
+            return f"Name: {self.username}\nGender: {self.gender}\nBio: [Hidden]"
         else:
             return f"Name: {self.username}\nBio: {self.bio}"
 
@@ -112,7 +112,9 @@ if __name__=="__main__":
     for username in user_list:
         bio = random.choice(random_bio)
         privacy = random.choice(["private", "open"])  # Needs to be a list, not two strings
-        person_profiles[username] = Person(username, bio, privacy)
+        gender = random.choice(["Male","Female"])
+        person_profiles[username] = Person(username, bio, privacy, gender)
+
 
     social.add_connection(connections)
     print(social.bio)
