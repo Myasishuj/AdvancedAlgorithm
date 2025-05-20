@@ -1,31 +1,38 @@
-from Question2_User_Profile import UserProfile
+import random
+class Person:
+    def __init__(self,username="default", bio="Default",privacy="Open"):
+        self.username=username
+        self.bio=bio
+        self.privacy=privacy
+
+    def __str__(self):
+        if self.privacy.lower() == "private":
+            return f"Name: {self.username}\nBio: [Hidden]"
+        else:
+            return f"Name: {self.username}\nBio: {self.bio}"
 
 class Graph:
     #Initialize the graph with initial node of None
-    def __init__(self, edges=None):
+    def __init__(self, edges=None,bio="default", privacy="Open"):
         self.graph_dict = {}
+        self.bio=bio
+        self.__privacy=privacy
         if edges is not None:
             #if a tuple/ connection is parsed into Graph contructor call add_connection
             self.add_connection(edges)
 
     #Adds one or more directed edges to the graph
     def add_connection(self, edges):
-        # If start node exists, append end node (if not already present)
         for start, end in edges:
-            if start in self.graph_dict:
-                if end not in self.graph_dict[start]:  # Prevent duplicates
-                    self.graph_dict[start].append(end)
+            # Ensure both nodes exist in the dictionary
+            if start not in self.graph_dict:
+                self.graph_dict[start] = []
+            if end not in self.graph_dict:
+                self.graph_dict[end] = []
 
-                # Make sure every inserted user is valid
-                if start not in self.graph_dict:
-                    self.graph_dict[start]=[]
-
-                if end not in self.graph_dict:
-                    self.graph_dict[end] = []
-            # Create new entry for start node if it doesn't exist
-            else:
-                self.graph_dict[start] = [end]
-
+            # Add the edge only if it's not a duplicate
+            if end not in self.graph_dict[start]:
+                self.graph_dict[start].append(end)
 
     def get_followers(self,node):
         followers = []
@@ -34,6 +41,8 @@ class Graph:
                 followers.append(start_node)
         return followers
 
+    def get_following(self,node):
+        return self.graph_dict[node]
 
     def is_related(self, start, end, visited=None):
         # Initialize visited set if not provided (for first call)
@@ -63,8 +72,17 @@ class Graph:
     def get_users(self,graph_dict):
         return list(self.graph_dict.keys())
 
+    def get_bio(self,node,privacy):
+        if privacy=="Private":
+            return "Private Profile"
+
+        else:
+            return self.bio
 
 if __name__=="__main__":
+    random_bio=["Ball","Cook","Study","Strong","Sad"]
+    user_list=set()
+    person_profiles = {}
     connections = [
         ("Alice", "Bob"),
         ("Alice", "Charlie"),
@@ -75,13 +93,29 @@ if __name__=="__main__":
         ("Charlie", "Eve")
     ]
 
-    social=Graph(connections)
+
+    social=Graph()
     social.add_connection([("Alice", "BRUH")])
+
+    # Collect all unique usernames from the graph (keys and values)
+    for user, follows in social.graph_dict.items():
+        user_list.add(user)
+        for follow in follows:
+            user_list.add(follow)
+
+
+    for username in user_list:
+        bio = random.choice(random_bio)
+        privacy = random.choice(["private", "open"])  # Needs to be a list, not two strings
+        person_profiles[username] = Person(username, bio, privacy)
+
+    social.add_connection(connections)
+    print(social.bio)
     print(social.graph_dict)
     print(social.get_followers("BRUH"))
+    print(social.get_following("BRUH"))
     print(social.is_related("Alice", "Eve",visited=set()))
+    print(person_profiles["Alice"])
 
     # for user in social.graph_dict.keys():
     #     set_profile(user, social.graph_dict[user], len(social.get_followers(user)),"I Like Tutrles")
-
-
