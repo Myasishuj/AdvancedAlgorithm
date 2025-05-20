@@ -1,0 +1,122 @@
+def terminal_ui(social, person_profiles):
+    while True:
+        print("\n" + "=" * 40)
+        print(" SOCIAL MEDIA GRAPH ".center(40, "="))
+        print("=" * 40)
+        print("\nMain Menu:")
+        print("1. 👥  Display all users")
+        print("2. 👤  View user profile")
+        print("3. 🔍  View user connections")
+        print("4. 🤝  Check connection between users")
+        print("5. ➕  Follow someone")
+        print("6. ➖  Unfollow someone")
+        print("7. 🚪  Exit")
+
+        print("\n" + "-" * 40)
+        choice = input("Enter your choice (1-7): ").strip()
+
+        if choice == "1":
+            print("\n" + " ALL USERS ".center(40, "-"))
+            users = sorted(social.graph_dict.keys())
+            if not users:
+                print("No users found.")
+            else:
+                for i, user in enumerate(users, 1):
+                    print(f"{i}. {user}")
+            input("\nPress Enter to continue...")
+
+        elif choice == "2":
+            print("\n" + " USER PROFILE ".center(40, "-"))
+            name = input("Enter username: ").strip()
+            if name in person_profiles:
+                print("\nProfile Details:")
+                for key, value in person_profiles[name].items():
+                    print(f"{key.capitalize()}: {value}")
+            else:
+                print(f"\nUser '{name}' not found.")
+            input("\nPress Enter to continue...")
+
+        elif choice == "3":
+            print("\n" + " USER CONNECTIONS ".center(40, "-"))
+            name = input("Enter username: ").strip()
+            if name in social.graph_dict:
+                print(f"\n{name}'s following ({len(social.get_following(name))}):")
+                following = social.get_following(name)
+                if following:
+                    for i, user in enumerate(following, 1):
+                        print(f"{i}. {user}")
+                else:
+                    print("Not following anyone yet.")
+
+                print(f"\n{name}'s followers ({len(social.get_followers(name))}):")
+                followers = social.get_followers(name)
+                if followers:
+                    for i, user in enumerate(followers, 1):
+                        print(f"{i}. {user}")
+                else:
+                    print("No followers yet.")
+            else:
+                print(f"\nUser '{name}' not found.")
+            input("\nPress Enter to continue...")
+
+        elif choice == "4":
+            print("\n" + " CHECK CONNECTION ".center(40, "-"))
+            user1 = input("Enter first username: ").strip()
+            user2 = input("Enter second username: ").strip()
+
+            if user1 not in social.graph_dict or user2 not in social.graph_dict:
+                print("\nOne or both users not found.")
+            else:
+                result = social.is_related(user1, user2)
+                direction = ""
+                if result:
+                    if user2 in social.get_following(user1):
+                        direction = f"({user1} follows {user2})"
+                    elif user1 in social.get_following(user2):
+                        direction = f"({user2} follows {user1})"
+                print("\n" + ("✅ Connected " + direction if result else "❌ Not connected"))
+            input("\nPress Enter to continue...")
+
+        elif choice == "5":
+            print("\n" + " FOLLOW USER ".center(40, "-"))
+            follower = input("Who wants to follow?: ").strip()
+            followee = input("Who to follow?: ").strip()
+
+            if follower == followee:
+                print("\nYou cannot follow yourself!")
+            elif follower not in social.graph_dict:
+                print(f"\nUser '{follower}' not found.")
+            elif followee not in social.graph_dict:
+                print(f"\nUser '{followee}' not found.")
+            elif followee in social.get_following(follower):
+                print(f"\n{follower} already follows {followee}.")
+            else:
+                social.add_connection([(follower, followee)])
+                print(f"\n✅ {follower} now follows {followee}.")
+            input("\nPress Enter to continue...")
+
+        elif choice == "6":
+            print("\n" + " UNFOLLOW USER ".center(40, "-"))
+            follower = input("Who wants to unfollow?: ").strip()
+            followee = input("Who to unfollow?: ").strip()
+
+            if follower not in social.graph_dict:
+                print(f"\nUser '{follower}' not found.")
+            elif followee not in social.graph_dict:
+                print(f"\nUser '{followee}' not found.")
+            elif followee not in social.get_following(follower):
+                print(f"\n{follower} doesn't follow {followee}.")
+            else:
+                social.unfollow([(follower, followee)])
+                print(f"\n✅ {follower} unfollowed {followee}.")
+            input("\nPress Enter to continue...")
+
+        elif choice == "7":
+            print("\n" + "=" * 40)
+            print(" THANK YOU FOR USING SOCIAL GRAPH ".center(40, "="))
+            print("=" * 40 + "\n")
+            break
+
+        else:
+            print("\nInvalid choice. Please enter a number between 1-7.")
+            input("Press Enter to continue...")
