@@ -10,7 +10,8 @@ def terminal_ui(social, person_profiles):
         print("4. 🤝  Check connection between users")
         print("5. ➕  Follow someone")
         print("6. ➖  Unfollow someone")
-        print("7. 🚪  Exit")
+        print("7. 🧠  Friend Recommendations")
+        print("8. 🚪   Exit")
 
         print("\n" + "-" * 40)
         choice = input("Enter your choice (1-7): ").strip()
@@ -112,6 +113,25 @@ def terminal_ui(social, person_profiles):
             input("\nPress Enter to continue...")
 
         elif choice == "7":
+            print("\n" + " RECOMMENDED FRIENDS ".center(50, "-"))
+            target = input("Enter the username to get recommendations: ").strip()
+
+            if target not in social.graph_dict:
+                print(f"User '{target}' does not exist in the network.")
+            else:
+                distances = social.get_connection_distances(target)
+                recommendations = sorted(
+                    [(user, dist) for user, dist in distances.items() if user != target],
+                    key=lambda x: x[1]
+                )
+
+                if recommendations:
+                    print("\nTop Recommended Friends (Closest first):\n")
+                    for i, (user, dist) in enumerate(recommendations, start=1):
+                        print(f"{i}. {user} (Distance: {dist})")
+                else:
+                    print("No recommended friends found.")
+        elif choice == "8":
             print("\n" + "=" * 40)
             print(" THANK YOU FOR USING SOCIAL GRAPH ".center(40, "="))
             print("=" * 40 + "\n")
