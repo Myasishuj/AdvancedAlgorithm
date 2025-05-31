@@ -1,3 +1,4 @@
+
 import random
 from Question2_UI import terminal_ui
 class Person:
@@ -74,6 +75,36 @@ class Graph:
                     return True
 
         return False
+    # get the distance between target user and all other users
+    def get_connection_distances(self, start):
+        from collections import deque
+
+        distances = {}
+        visited = set()
+        queue = deque([(start, 0)])  # (user, distance)
+
+        while queue:
+            current, dist = queue.popleft()
+            if current not in visited:
+                visited.add(current)
+                distances[current] = dist
+                for neighbor in self.graph_dict.get(current, []):
+                    if neighbor not in visited:
+                        queue.append((neighbor, dist + 1))
+        return distances
+
+    # Recommend friends based on the distance betwenen users
+    def recommend_friends(self, user):
+        distances = self.get_connection_distances(user)
+        direct_friends = set(self.graph_dict.get(user, []))
+
+        # Recommend users who are within 2-3 degrees and not already friends
+        recommendations = {
+            u: d for u, d in distances.items()
+            if u != user and u not in direct_friends and 1 < d <= 3
+        }
+        # Sort by distance
+        return sorted(recommendations.items(), key=lambda x: x[1])
 
     # Return all users
     def get_users(self,graph_dict):
@@ -122,6 +153,7 @@ if __name__=="__main__":
     social = Graph()
     social.add_connection(connections)
     social.generate_Profile()
+
     # print(social.bio)
     # print(social.graph_dict)
     # print(social.get_followers("BRUH"))
@@ -132,5 +164,5 @@ if __name__=="__main__":
     # print(social.graph_dict)
     # for user in social.graph_dict.keys():
     #     set_profile(user, social.graph_dict[user], len(social.get_followers(user)),"I Like Tutrles")
-
+    #
     terminal_ui(social, person_profiles)
