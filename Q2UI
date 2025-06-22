@@ -6,15 +6,18 @@ def terminal_ui(social, person_profiles):
         print("\nMain Menu:")
         print("1. 👥  Display all users")
         print("2. 👤  View user profile")
-        print("3. 🔍  View user connections")
-        print("4. 🤝  Check connection between users")
-        print("5. ➕  Follow someone")
-        print("6. ➖  Unfollow someone")
-        print("7. 🧠  Friend Recommendations")
-        print("8. 🚪   Exit")
+        print("3. 👤  Edit user profile")
+        print("4. 🔍  View user connections")
+        print("5. 🤝  Check connection between users")
+        print("6. ➕  Follow someone")
+        print("7. ➖  Unfollow someone")
+        print("8. 🧠  Friend Recommendations")
+        print("9. ➕  Add New User")
+        print("10. 🚪  Exit")
+
 
         print("\n" + "-" * 40)
-        choice = input("Enter your choice (1-7): ").strip()
+        choice = input("Enter your choice (1-9): ").strip()
 
         if choice == "1":
             print("\n" + " ALL USERS ".center(40, "-"))
@@ -31,13 +34,40 @@ def terminal_ui(social, person_profiles):
             name = input("Enter username: ").strip()
             if name in person_profiles:
                 print("\nProfile Details:")
-                for key, value in person_profiles[name].items():
-                    print(f"{key.capitalize()}: {value}")
+                print(f"Name: {person_profiles[name].username}\nBio: {person_profiles[name].bio}\n"
+                      f"Gender: {person_profiles[name].gender}\nPrivacy: {person_profiles[name].privacy}")
+
             else:
                 print(f"\nUser '{name}' not found.")
             input("\nPress Enter to continue...")
 
         elif choice == "3":
+            print("\n" + " EDIT USER PROFILE ".center(40, "-"))
+            name = input("Enter username: ").strip()
+
+            if name in person_profiles:  # Assuming 'social' manages the profiles
+                print(f"\nEditing profile for '{name}'")
+                print(f"Current Bio: {person_profiles[name].bio}")
+                print(f"Current Privacy: {person_profiles[name].privacy}")
+                print(f"Current Gender: {getattr(person_profiles[name], 'gender', 'Not set')}")
+                bio = input("Enter new bio (or press Enter to skip): ").strip()
+                privacy = input("Set Privacy [Open/Private] (or press Enter to skip): ").strip()
+                gender = input("Set Gender (or press Enter to skip): ").strip()
+
+                social.update_profile(name, bio=bio, privacy=privacy, gender=gender)
+                print("\nNEW PROFILE \n")
+                print(f"Name: {person_profiles[name].username}\nBio: {person_profiles[name].bio}\n"
+                      f"Gender: {person_profiles[name].gender}\nPrivacy: {person_profiles[name].privacy}")
+                print(f"\n✅ Profile for '{name}' updated successfully.")
+
+            else:
+
+                print(f"\n❌ User '{name}' not found.")
+
+            input("\nPress Enter to continue...")
+
+
+        elif choice == "4":
             print("\n" + " USER CONNECTIONS ".center(40, "-"))
             name = input("Enter username: ").strip()
             if name in social.graph_dict:
@@ -60,7 +90,7 @@ def terminal_ui(social, person_profiles):
                 print(f"\nUser '{name}' not found.")
             input("\nPress Enter to continue...")
 
-        elif choice == "4":
+        elif choice == "5":
             print("\n" + " CHECK CONNECTION ".center(40, "-"))
             user1 = input("Enter first username: ").strip()
             user2 = input("Enter second username: ").strip()
@@ -78,7 +108,7 @@ def terminal_ui(social, person_profiles):
                 print("\n" + ("✅ Connected " + direction if result else "❌ Not connected"))
             input("\nPress Enter to continue...")
 
-        elif choice == "5":
+        elif choice == "6":
             print("\n" + " FOLLOW USER ".center(40, "-"))
             follower = input("Who wants to follow?: ").strip()
             followee = input("Who to follow?: ").strip()
@@ -96,7 +126,7 @@ def terminal_ui(social, person_profiles):
                 print(f"\n✅ {follower} now follows {followee}.")
             input("\nPress Enter to continue...")
 
-        elif choice == "6":
+        elif choice == "7":
             print("\n" + " UNFOLLOW USER ".center(40, "-"))
             follower = input("Who wants to unfollow?: ").strip()
             followee = input("Who to unfollow?: ").strip()
@@ -112,31 +142,46 @@ def terminal_ui(social, person_profiles):
                 print(f"\n✅ {follower} unfollowed {followee}.")
             input("\nPress Enter to continue...")
 
-        elif choice == "7":
+
+        elif choice == "8":
             print("\n" + " RECOMMENDED FRIENDS ".center(50, "-"))
             target = input("Enter the username to get recommendations: ").strip()
 
             if target not in social.graph_dict:
                 print(f"User '{target}' does not exist in the network.")
+
             else:
-                distances = social.get_connection_distances(target)
-                recommendations = sorted(
-                    [(user, dist) for user, dist in distances.items() if user != target],
-                    key=lambda x: x[1]
-                )
+                recommendations = social.recommend_friends(target)
 
                 if recommendations:
                     print("\nTop Recommended Friends (Closest first):\n")
                     for i, (user, dist) in enumerate(recommendations, start=1):
                         print(f"{i}. {user} (Distance: {dist})")
                 else:
-                    print("No recommended friends found.")
-        elif choice == "8":
+                    print("No recommended friends found. "
+                          "This might be because the user is not connected to others "
+                          "or only has direct friends.")
+
+
+        elif choice == "9":
+            print("\n" + " ADD NEW USER ".center(50, "-"))
+            name = input("Enter new user's name: ").strip()
+            bio = input("Enter bio (optional, press Enter to skip): ").strip() or None
+            privacy = input("Enter privacy setting (private/open, press Enter to skip): ").strip() or None
+            gender = input("Enter gender (Male/Female/Other, press Enter to skip): ").strip() or None
+
+            if name in social.graph_dict:
+                print(f"User '{name}' already exists.")
+            else:
+                social.add_user(name, bio, privacy, gender)
+                print(f"User '{name}' has been added successfully.")
+
+        elif choice == "10":
             print("\n" + "=" * 40)
             print(" THANK YOU FOR USING SOCIAL GRAPH ".center(40, "="))
             print("=" * 40 + "\n")
             break
 
         else:
-            print("\nInvalid choice. Please enter a number between 1-7.")
+            print("\nInvalid choice. Please enter a number between 1-10.")
             input("Press Enter to continue...")
