@@ -1,6 +1,10 @@
 
 import random
 from Question2_UI import terminal_ui
+from collections import deque
+
+
+# Person Class to store information about each user
 class Person:
     def __init__(self,username="default", bio="Default",privacy="Open",gender="None"):
         self.username=username
@@ -9,10 +13,11 @@ class Person:
         self.gender=gender
     def __str__(self):
         if self.privacy.lower() == "private":
-            return f"Name: {self.username}\nGender: {self.gender}\nBio: [Hidden]"
+            return f"Name: {self.username}\nGender: {self.gender}\nBio: [Hidden] \nPrivacy: {self.privacy}"
         else:
-            return f"Name: {self.username}\nBio: {self.bio}"
+            return f"Name: {self.username}\nBio: {self.bio}\nGender: {self.gender}\nPrivacy: {self.privacy}"
 
+# Graph Class
 class Graph:
     #Initialize the graph with initial node of None
     def __init__(self, edges=None,bio="default", privacy="Open"):
@@ -36,15 +41,18 @@ class Graph:
             if end not in self.graph_dict[start]:
                 self.graph_dict[start].append(end)
 
+    # Unfollow user accept start,end tuple
     def unfollow(self, edges):
+        # Loop through the graph
         for start, end in edges:
             if self.is_related(start, end):
+                # Check if the current user is in the social graph
                 if start in self.graph_dict and end in self.graph_dict[start]:
                     self.graph_dict[start].remove(end)
 
     def get_followers(self,node):
         followers = []
-        for start_node, neighbors in self.graph_dict.items():  # Fixed iteration
+        for start_node, neighbors in self.graph_dict.items():  # Fixed iteration through the graph
             if node in neighbors:  # Check if target is in neighbor list
                 followers.append(start_node)
         return followers
@@ -52,11 +60,12 @@ class Graph:
     def get_following(self,node):
         return self.graph_dict[node]
 
+    # Check if a user is connected to another using recursion
     def is_related(self, start, end, visited=None):
         # Initialize visited set if not provided (for first call)
         if visited is None:
             visited = set()
-
+            
         # Check if start exists in graph
         if start not in self.graph_dict:
             return False
@@ -75,22 +84,34 @@ class Graph:
                     return True
 
         return False
-    # get the distance between target user and all other users
-    def get_connection_distances(self, start):
-        from collections import deque
 
-        distances = {}
-        visited = set()
-        queue = deque([(start, 0)])  # (user, distance)
+    # get the distance between target user and all other users (same function as is_realted but iterative bi directional BFS method)
+    def get_connection_distances(self, start):
+
+        distances = {} #Store distance from start user
+        visited = set() #visited set to track visited vertices and prevent cycle/ loop
+        queue = deque([(start, 0)])  # intiliaze start user with its distance being 0
 
         while queue:
-            current, dist = queue.popleft()
+            current, dist = queue.popleft()  # Pop Queue to keep BFS order
             if current not in visited:
                 visited.add(current)
                 distances[current] = dist
-                for neighbor in self.graph_dict.get(current, []):
+
+                # Neighbors = users you follow
+                neighbors = set(self.graph_dict.get(current, []))
+
+                # Add people who current follows
+                for user, follows in self.graph_dict.items():
+                    # Add users who follows current
+                    if current in follows:
+                        neighbors.add(user)
+
+                # Enqueue all unvisited neighbour to the queue
+                for neighbor in neighbors:
                     if neighbor not in visited:
                         queue.append((neighbor, dist + 1))
+
         return distances
 
     # Recommend friends based on the distance betwenen users
@@ -98,12 +119,12 @@ class Graph:
         distances = self.get_connection_distances(user)
         direct_friends = set(self.graph_dict.get(user, []))
 
-        # Recommend users who are within 2-3 degrees and not already friends
+        # Recommend users within 2–3 degrees, excluding direct friends and self
         recommendations = {
             u: d for u, d in distances.items()
-            if u != user and u not in direct_friends and 1 < d <= 3
+            if u != user and u not in direct_friends and 0 < d <= 3
         }
-        # Sort by distance
+
         return sorted(recommendations.items(), key=lambda x: x[1])
 
     # Return all users
@@ -117,21 +138,51 @@ class Graph:
         else:
             return self.bio
 
-    def generate_Profile(self):
+    #  Randomly generate a profile for each user
+    def generate_Profile(self, username=None):
         # Collect all unique usernames from the graph (keys and values)
-        for user, follows in social.graph_dict.items():
+        for user, follows in self.graph_dict.items():
             user_list.add(user)
             for follow in follows:
                 user_list.add(follow)
 
-        for username in user_list:
+        if username is None:
+            for uname in user_list:
+                bio = random.choice(random_bio)
+                privacy = random.choice(["private", "open"])
+                gender = random.choice(["Male", "Female","None"])
+                person_profiles[uname] = Person(uname, bio, privacy, gender)
+        else:
             bio = random.choice(random_bio)
-            privacy = random.choice(["private", "open"])  # Needs to be a list, not two strings
-            gender = random.choice(["Male", "Female"])
+            privacy = random.choice(["private", "open"])
+            gender = random.choice(["Male", "Female","None"])
             person_profiles[username] = Person(username, bio, privacy, gender)
 
+    # Set and Change user profile information
+    def update_profile(self, name, bio=None, privacy=None, gender=None):
+        if name in person_profiles:
+            if bio is not None:
+                person_profiles[name].bio = bio
+            if privacy is not None:
+                person_profiles[name].privacy = privacy
+            if gender is not None:
+                person_profiles[name].gender = gender
+        else:
+            print(f"{name} not found in profiles.")
+
+    def add_user(self, name,bio=None, privacy=None, gender=None):
+        if name not in self.graph_dict and name not in person_profiles:
+            self.graph_dict[name]=[]
+            person_profiles[name]=Person(name,bio,privacy,gender)
+            if bio is not None:
+                person_profiles[name].bio = bio
+            if privacy is not None:
+                person_profiles[name].privacy = privacy
+            if gender is not None:
+                person_profiles[name].gender = gender
+
 if __name__=="__main__":
-    random_bio=["Ball","Cook","Study","Strong","Sad"]
+    random_bio=["Ball","Cook","Study","Strong","Sad","None"]
     user_list=set()
     person_profiles = {}
     connections = [
@@ -139,23 +190,24 @@ if __name__=="__main__":
         ("Alice", "Charlie"),
         ("Bob", "Diana"),
         ("Diana", "Alice"),
-        ("Eve", "Alice"),
         ("Eve", "Charlie"),
         ("Charlie", "Eve")
     ]
 
 
 
-    # social.add_connection([("Alice", "BRUH")])
+
 
 
 
     social = Graph()
     social.add_connection(connections)
+    social.add_connection([("Test", "Following Next")])
     social.generate_Profile()
-
+    social.update_profile("Alice", bio="TestBio Test", privacy="Public", gender="Female")
+    # print(person_profiles['Alice'])
     # print(social.bio)
-    # print(social.graph_dict)
+    # print("Graph Dictionary Structure: \n",social.graph_dict)
     # print(social.get_followers("BRUH"))
     # print(social.get_following("BRUH"))
     # print(social.is_related("Alice", "Eve",visited=set()))
