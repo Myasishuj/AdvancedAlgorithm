@@ -1,18 +1,19 @@
+
 def terminal_ui(social, person_profiles):
     while True:
         print("\n" + "=" * 40)
         print(" SOCIAL MEDIA GRAPH ".center(40, "="))
         print("=" * 40)
         print("\nMain Menu:")
-        print("1. 👥  Display all users")
-        print("2. 👤  View user profile")
-        print("3. 👤  Edit user profile")
-        print("4. 🔍  View user connections")
-        print("5. 🤝  Check connection between users")
-        print("6. ➕  Follow someone")
-        print("7. ➖  Unfollow someone")
-        print("8. 🧠  Friend Recommendations")
-        print("9. ➕  Add New User")
+        print("1.  👥  Display all users")
+        print("2.  👤  View user profile")
+        print("3.  👤  Edit user profile")
+        print("4.  🔍  View user connections")
+        print("5.  🤝  Check connection between users")
+        print("6.  ➕  Follow someone")
+        print("7.  ➖  Unfollow someone")
+        print("8.  🧠  Friend Recommendations")
+        print("9.  ➕  Add New User")
         print("10. 🚪  Exit")
 
 
@@ -33,9 +34,12 @@ def terminal_ui(social, person_profiles):
             print("\n" + " USER PROFILE ".center(40, "-"))
             name = input("Enter username: ").strip()
             if name in person_profiles:
-                print("\nProfile Details:")
-                print(f"Name: {person_profiles[name].username}\nBio: {person_profiles[name].bio}\n"
-                      f"Gender: {person_profiles[name].gender}\nPrivacy: {person_profiles[name].privacy}")
+                if person_profiles[name].privacy=="Public":
+                    print("\nProfile Details:")
+                    print(f"Name: {person_profiles[name].username}\nBio: {person_profiles[name].bio}\n"
+                          f"Gender: {person_profiles[name].gender}\nPrivacy: {person_profiles[name].privacy}")
+                else:
+                    print("\nProfile is Private")
 
             else:
                 print(f"\nUser '{name}' not found.")
